@@ -2,34 +2,43 @@
 
 require 'rest.php';
 
-// tests:
-
-echo '<pre>';
-echo '  REQUEST_URI: ' . $_SERVER['REQUEST_URI'];
-echo '<br />';
-echo '  SCRIPT_NAME: ' . $_SERVER['SCRIPT_NAME'];
-echo '<br />';
-echo '<br />';
-echo 'Environment:';
-echo '<br />';
-echo '  BASE_URI: ' . $env->getBaseURL();
-echo '<br />';
-echo '  PATH: ' . $env->getPath();
-echo '<br />';
-echo '  ARGS: '; var_dump($env->getArgs());
-echo '</pre>';
-
-echo '<hr />';
-echo '<pre>';
-
 // example:
 
-when("/", "base");
+module('onemodule', function() {
+	return "emil";
+});
 
-when("/user/:userName", "user");
+handler('base', function($onemodule) {
+	return response("base: hi " . $onemodule, "text");
+});
+
+handler('user', function($env, $onemodule) {
+	return response([
+		"name" => $onemodule,
+		"id" => $env->getParam('userId'),
+		"method" => $env->getMethod(),
+		"stamp" => "23496812649",
+		"foo" => [
+			"bar",
+			"with",
+			"salt"
+		]
+	]);
+});
+
+/* function when
+ * 
+ * @param path {string} the pattern to match
+ * @param route 1. {string} the name of the handler to load
+ *              2. {array}  an array like [ "handler"=> "thenameofthehandler", "dependencies"=> "files to load (with modules or handlers)" ]
+ */
+when("/", [
+	"handler"   => "base",
+	"dependencies" => []
+]);
+
+when("/user/:userId", "user");
 
 when("/info/:cmd*/g/:add?", "user");
 
 otherwise("error");
-
-echo '</pre>';
