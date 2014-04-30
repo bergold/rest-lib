@@ -1,5 +1,17 @@
 <?php
 
+// util
+function func_get_argNames($funcName) {
+    $f = new ReflectionFunction($funcName);
+    $result = array();
+    foreach ($f->getParameters() as $param) {
+        $result[] = $param->name;   
+    }
+    return $result;
+}
+
+
+// class Environment
 class Environment {
     
     private $params = array();
@@ -18,6 +30,10 @@ class Environment {
         return $_GET;
     }
     
+    public function getMethod() {
+        return $_SERVER['REQUEST_METHOD'];
+    }
+    
     public function getParams() {
         return $this->params;
     }
@@ -31,6 +47,7 @@ class Environment {
 $env = new Environment();
 
 
+// class ModuleLoader
 class ModuleLoader {
     
     private $modules = array();
