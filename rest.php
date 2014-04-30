@@ -30,12 +30,19 @@ class Environment {
         return $_GET;
     }
     
+    public function getHeader($key) {
+    	return $_SERVER['HTTP_' . str_replace("-", "_", $key)];
+    }
+    
     public function getMethod() {
         return $_SERVER['REQUEST_METHOD'];
     }
     
     public function getParams() {
         return $this->params;
+    }
+    public function getParam($key) {
+    	return $this->getParams()[$key];
     }
     
     public function setParams($p) {
@@ -50,25 +57,56 @@ $env = new Environment();
 // class ModuleLoader
 class ModuleLoader {
     
-    private $modules = array();
+    private $includes = array();
+    private $modules  = array();
+    private $handler  = array();
+    
+    public function needs($path) {
+    	if (isset($this->includes[$path])) return true;
+    	if (!is_file($path)) throw new Exception("FILE_NOT_FOUND: The file '$path' was not found");
+    	include $path;
+    	return true;
+    }
+    
+    public function compile($fn) {
+    	$deps = func_get_argNames($fn);
+    	$deps = $this->getDeps($deps);
+    	return call_user_func_array($fn, $deps);
+    }
     
     public function getDep($dep) {
-        if (isset($this->modules[$dep])) {
-            return $this->modules[$dep];
-        } else {
-            // [todo] load this depency
-        }
+    	global $env;
+    	if ($dep == "env") return $env;
+        if (!isset($this->modules[$dep])) throw new Exception("MODULE_NOT_FOUND: The module '$dep' was not found");
+        return $this->compile($this->modules[$dep]);
+    }
+    
+    public function addModule($name, $fn) {
+    	$this->modules[$name] = $fn;
+    }
+    
+    public function addHandler($name, $fn) {
+    	$this->handler[$name] = $fn;
     }
     
     public function getDeps($deps) {
         foreach ($deps as $i => $dep) {
             $deps[$i] = $this->getDep($dep);
         }
+        return $deps;
     }
     
-    public function invoke($handler) {
+    public function invoke($route) {
         global $env;
-        echo "<i>matched route: </i><b>$handler</b><i> with params </i><b>"; var_dump($env->getParams()); echo "</b>";
+        $handler = is_array($route) ? $route['handler']      : $route;
+        $deps    = is_array($route) ? $route['dependencies'] : [];
+        foreach ($deps as $dep) {
+        	$path = $dep . '.php';
+        	$this->needs($path);
+        }
+        if (!isset($this->handler[$handler])) throw new Exception("HANDLER_NOT_FOUND: The handler '$handler' was not found");
+        $fn = $this->handler[$handler];
+    	$this->compile($fn);
     }
     
 }
@@ -76,6 +114,7 @@ class ModuleLoader {
 $moduleloader = new ModuleLoader();
 
 
+// class Router
 class Router {
     
     private $matched = false;
@@ -169,6 +208,35 @@ class Router {
 $router = new Router();
 
 
+// class ResponseParser
+class ResponseParser {
+	
+	private $map_type_mimes = [
+		"text" => "text/plain",
+		"json" => "application/json"
+	];
+	
+	public function generate($data, $type = 'json') {
+		header('Content-type: ' . (isset($this->map_type_mimes[$type]) ? $this->map_type_mimes[$type] : $type));
+		switch ($type) {
+			case 'json':
+				echo $this->gen_json($data); break;
+			default:
+				echo $data; break;
+		}
+		exit(0);
+	}
+	
+	private function gen_json($data) {
+		return json_encode($data);
+	}
+	
+}
+
+$responseparser = new ResponseParser();
+
+
+
 function when($path, $handler) {
     global $router;
     $router->when($path, $handler);
@@ -179,14 +247,22 @@ function otherwise($handler) {
     $router->otherwise($handler);
 }
 
-function handler() {
-    
+function handler($name, $fn) {
+	global $moduleloader;
+    $moduleloader->addHandler($name, $fn);
 }
 
-function module() {
-    
+function module($name, $fn) {
+	global $moduleloader;
+    $moduleloader->addModule($name, $fn);
+}
+
+function needs($path) {
+	global $moduleloader;
+	$moduleloader->needs($path);
 }
 
 function response($data, $type = 'json') {
-    
+    global $responseparser;
+    $responseparser->generate($data, $type);
 }
