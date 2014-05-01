@@ -9,17 +9,18 @@ usage
 
 Make sure every request comes to index.php
 
-.htaccess
 ```
+# .htaccess
 RewriteEngine On
 RewriteRule . index.php [L]
 ```
 
 First you have to require rest.php in your index.php:
 
-index.php
 ```php
 <?php
+// index.php
+
 // first require rest.php
 require 'rest.php';
 
@@ -34,7 +35,26 @@ when('/', [
   "dependencies" => ['afile', 'another']
 ]);
 ```
-The files 'afile.php' and 'another.php' are included and the handler _base_ is invoked.
+If the path matches '/', the files 'afile.php' and 'another.php' are included and the handler _base_ is invoked.
 > The files are loaded relative to your index.php
+
+###Define a hander
+```php
+handler('base', function() {
+  // do anything
+  
+  // define the response
+  response([
+    "for" => "example",
+    "json" => "data"
+  ], "json");
+});
+```
+
+###Load other files
+```php
+needs('this/file');
+```
+will load the file 'this/file.php'
 
 > Important: If you don't use "dependencies" in your route, make sure your handlers are loaded before the route definition
