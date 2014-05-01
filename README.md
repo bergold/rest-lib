@@ -6,7 +6,7 @@ With this PHP libary you're able to develop fast and powerfull php-backends.
 
 For full documentation see https://github.com/bergold/rest-lib.wiki
 
-usage
+Usage
 -----
 
 Make sure every request comes to index.php
@@ -38,7 +38,7 @@ when('/', [
 If the path matches '/', the files 'afile.php' and 'another.php' are included and the handler _base_ is invoked.
 > The files are loaded relative to your index.php
 
-### Define a hander
+### Define a handler
 ```php
 handler('base', function() {
   // do anything
@@ -51,7 +51,7 @@ handler('base', function() {
 });
 ```
 
-### use modules
+### Use modules
 ```php
 // define a module
 module('amodule', function() {
