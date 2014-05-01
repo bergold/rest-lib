@@ -11,6 +11,31 @@ function func_get_argNames($funcName) {
 }
 
 
+// class Config
+class Config {
+	
+	private static $c = [
+		'DEPS_BASE_PATH' => '',
+		'JSON_PRETTY_PRINT' => false
+	];
+	
+	static function set($key, $val) {
+		if (isset(self::$c[$key]))
+			self::$c[$key] = $val;
+	}
+	
+	static function get($key) {
+		return self::$c[$key];
+	}
+	
+}
+
+function config($key, $val = null) {
+	if (is_null($val)) return Config::get($key);
+	else Config::set($key, $val);
+}
+
+
 // class Environment
 class Environment {
     
@@ -61,8 +86,9 @@ class ModuleLoader {
     private $modules  = array();
     private $handler  = array();
     
-    public function needs($path) {
-    	if (isset($this->includes[$path])) return true;
+    public function needs($dep) {
+    	$path = config('DEPS_BASE_PATH') . $dep . ".php";
+    	if (isset($this->includes[$dep])) return true;
     	if (!is_file($path)) throw new Exception("FILE_NOT_FOUND: The file '$path' was not found");
     	include $path;
     	return true;
@@ -101,8 +127,7 @@ class ModuleLoader {
         $handler = is_array($route) ? $route['handler']      : $route;
         $deps    = is_array($route) ? $route['dependencies'] : [];
         foreach ($deps as $dep) {
-        	$path = $dep . '.php';
-        	$this->needs($path);
+        	$this->needs($dep);
         }
         if (!isset($this->handler[$handler])) throw new Exception("HANDLER_NOT_FOUND: The handler '$handler' was not found");
         $fn = $this->handler[$handler];
@@ -228,6 +253,7 @@ class ResponseParser {
 	}
 	
 	private function gen_json($data) {
+		if (config('JSON_PRETTY_PRINT')) return json_encode($data, JSON_PRETTY_PRINT);
 		return json_encode($data);
 	}
 	
