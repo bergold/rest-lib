@@ -4,7 +4,7 @@ rest-lib
 With this PHP libary you're able to develop fast and powerfull php-backends.
 > Informations: http://de.wikipedia.org/wiki/Representational_State_Transfer
 
-For full documentation see https://github.com/bergold/rest-lib.wiki
+For full documentation see https://github.com/bergold/rest-lib/wiki
 
 Usage
 -----
