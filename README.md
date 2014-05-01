@@ -58,7 +58,7 @@ module('amodule', function() {
   return "foo";
 });
 
-// define a handler and inject module _amodule_
+// define a handler and inject module 'amodule'
 handler('ahandler', function($amodule) {
   // $amodule == "foo"
 });
