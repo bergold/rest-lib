@@ -4,26 +4,15 @@ require 'rest.php';
 
 // example:
 
-module('onemodule', function() {
-	return "emil";
-});
+config('JSON_PRETTY_PRINT', true);
 
-handler('base', function($onemodule) {
-	return response("base: hi " . $onemodule, "text");
-});
-
-handler('user', function($env, $onemodule) {
+handler('error', function($env) {
 	return response([
-		"name" => $onemodule,
-		"id" => $env->getParam('userId'),
-		"method" => $env->getMethod(),
-		"stamp" => "23496812649",
-		"foo" => [
-			"bar",
-			"with",
-			"salt"
+		"error" => [
+			"code" => "400",
+			"msg" => "Invalid request"
 		]
-	]);
+	], 'json', 400);
 });
 
 /* function when
@@ -34,11 +23,17 @@ handler('user', function($env, $onemodule) {
  */
 when("/", [
 	"handler"   => "base",
-	"dependencies" => []
+	"dependencies" => ['handler']
 ]);
 
-when("/user/:userId", "user");
+when("/det-chat", [
+	"handler" => "det-chat",
+	"dependencies" => ['handler']
+]);
 
-when("/info/:cmd*/g/:add?", "user");
+when("/i/want/to/check/:tests", [
+	"handler" => "tester",
+	"dependencies" => ["tests"]
+]);
 
 otherwise("error");
