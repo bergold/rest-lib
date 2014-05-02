@@ -237,8 +237,14 @@ $router = new Router();
 class ResponseParser {
 	
 	private $map_type_mimes = [
-		"text" => "text/plain",
-		"json" => "application/json"
+		"text"       => "text/plain",
+		"html"       => "text/html",
+		"css"        => "text/css",
+		"javascript" => "application/javascript",
+		"json"       => "application/json",
+		"xml"        => "application/xml",
+		"binary"     => "application/octet-stream",
+		"png"        => "image/png"
 	];
 	
 	private $map_type_parser = [];
