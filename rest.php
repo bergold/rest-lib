@@ -241,26 +241,35 @@ class ResponseParser {
 		"json" => "application/json"
 	];
 	
-	public function generate($data, $type, $status) {
+	private $map_type_parser = [];
+	
+	public function addParser($type, $fn) {
+		$this->map_type_parser[$type] = $fn;
+	}
+	
+	public function out($data, $type, $status) {
 		header('Content-type: ' . (isset($this->map_type_mimes[$type]) ? $this->map_type_mimes[$type] : $type));
 		http_response_code($status);
-		switch ($type) {
-			case 'json':
-				echo $this->gen_json($data); break;
-			default:
-				echo $data; break;
-		}
+		echo $this->parse($type, $data);
 		exit($status);
 	}
 	
-	private function gen_json($data) {
-		if (config('JSON_PRETTY_PRINT')) return json_encode($data, JSON_PRETTY_PRINT);
-		return json_encode($data);
+	public function parse($type, $data) {
+		if (isset($this->map_type_parser[$type])) {
+			return $this->map_type_parser[$type]($data);
+		} else {
+			return $data;
+		}
 	}
 	
 }
 
 $responseparser = new ResponseParser();
+
+$responseparser->addParser("json", function($data) {
+	if (config('JSON_PRETTY_PRINT')) return json_encode($data, JSON_PRETTY_PRINT);
+	return json_encode($data);
+});
 
 
 // global functions
@@ -284,6 +293,16 @@ function handler($name, $fn) {
     $moduleloader->addHandler($name, $fn);
 }
 
+function parser($type, $fn) {
+	global $responseparser;
+	$responseparser->addParser($type, $fn);
+}
+
+function parse($type, $data) {
+	global $responseparser;
+	return $responseparser->parse($type, $data);
+}
+
 function module($name, $fn) {
 	global $moduleloader;
     $moduleloader->addModule($name, $fn);
@@ -296,7 +315,7 @@ function needs($path) {
 
 function response($data, $type = 'json', $status = 200) {
     global $responseparser;
-    $responseparser->generate($data, $type, $status);
+    $responseparser->out($data, $type, $status);
 }
 
 
