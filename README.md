@@ -6,17 +6,17 @@ With this PHP libary you're able to develop fast and powerfull php-backends.
 
 For full documentation see https://github.com/bergold/rest-lib/wiki
 
-Usage
------
+Getting started
+---------------
 
-Make sure every request comes to index.php
+Make sure every request comes to `index.php`
 ```
 # .htaccess
 RewriteEngine On
 RewriteRule . index.php [L]
 ```
 
-First you have to require rest.php in your index.php:
+First you have to require `rest.php` in your index.php:
 ```php
 <?php
 // index.php
@@ -35,8 +35,17 @@ when('/', [
   "dependencies" => ['afile', 'another']
 ]);
 ```
-If the path matches '/', the files 'afile.php' and 'another.php' are included and the handler _base_ is invoked.
-> The files are loaded relative to your index.php
+The string '/' is matched against `$env->getPath()`.
+If the path matches, the files 'afile.php' and 'another.php' are included and the handler _base_ is invoked.
+
+```php
+when('/user/:id/action/:action*', "base");
+```
+This route will match `/user/324/action/repos/new` and extract:
+* `id: 324`
+* `action: 'repos/new'`
+
+This Data is stored in `$routeParams`.
 
 ### Define a handler
 ```php
