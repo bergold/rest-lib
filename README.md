@@ -45,7 +45,7 @@ This route will match `/user/324/action/repos/new` and extract:
 * `id: 324`
 * `action: 'repos/new'`
 
-This data is stored in `$routeParams`.
+This data is stored in `$routeParams` and the handler _base_ is invoked.
 
 ### Define a handler
 ```php
