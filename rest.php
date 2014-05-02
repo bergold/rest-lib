@@ -31,11 +31,6 @@ class Config {
 	
 }
 
-function config($key, $val = null) {
-	if (is_null($val)) return Config::get($key);
-	else Config::set($key, $val);
-}
-
 
 // class Environment
 class Environment {
@@ -268,6 +263,11 @@ class ResponseParser {
 $responseparser = new ResponseParser();
 
 
+// global functions
+function config($key, $val = null) {
+	if (is_null($val)) return Config::get($key);
+	else Config::set($key, $val);
+}
 
 function when($path, $handler) {
     global $router;
@@ -298,6 +298,7 @@ function response($data, $type = 'json', $status = 200) {
     global $responseparser;
     $responseparser->generate($data, $type, $status);
 }
+
 
 // standard modules
 module('env', function() use($env) { return $env; });
