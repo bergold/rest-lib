@@ -60,7 +60,7 @@ handler('base', function() {
 });
 ```
 
-The `response`-call sets the Content-Type header, the http_response_code and echos a parsed json.
+The `response`-call sets the `Content-Type: application/json`, the `http_response_code(200)` and echos a parsed json.
 The script exits immediately.
 
 ### Use modules
