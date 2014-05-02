@@ -60,6 +60,9 @@ handler('base', function() {
 });
 ```
 
+The `response`-call sets the Content-Type header, the http_response_code and echos a parsed json.
+The script exits immediately.
+
 ### Use modules
 ```php
 // define a module
