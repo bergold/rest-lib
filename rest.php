@@ -16,6 +16,7 @@ class Config {
 	
 	private static $c = [
 		'DEPS_BASE_PATH' => '',
+		'ALLOW_MODULE_OVERWRITE' => false,
 		'JSON_PRETTY_PRINT' => false
 	];
 	
@@ -55,8 +56,8 @@ class Environment {
         return $_GET;
     }
     
-    public function getHeader($key) {
-    	return $_SERVER['HTTP_' . str_replace("-", "_", $key)];
+    public function getHeaders() {
+    	return getallheaders();
     }
     
     public function getMethod() {
@@ -72,6 +73,10 @@ class Environment {
     
     public function setParams($p) {
         $this->params = $p;
+    }
+    
+    public function getData() {
+    	return file_get_contents('php://input');
     }
     
 }
@@ -102,12 +107,12 @@ class ModuleLoader {
     
     public function getDep($dep) {
     	global $env;
-    	if ($dep == "env") return $env;
         if (!isset($this->modules[$dep])) throw new Exception("MODULE_NOT_FOUND: The module '$dep' was not found");
         return $this->compile($this->modules[$dep]);
     }
     
     public function addModule($name, $fn) {
+    	if (isset($this->modules[$name]) && !config('ALLOW_MODULE_OVERWRITE')) throw new Exception("MODULE_OVERWRITE_FORBIDDEN: The module '$name' already exists");
     	$this->modules[$name] = $fn;
     }
     
@@ -241,15 +246,16 @@ class ResponseParser {
 		"json" => "application/json"
 	];
 	
-	public function generate($data, $type = 'json') {
+	public function generate($data, $type, $status) {
 		header('Content-type: ' . (isset($this->map_type_mimes[$type]) ? $this->map_type_mimes[$type] : $type));
+		http_response_code($status);
 		switch ($type) {
 			case 'json':
 				echo $this->gen_json($data); break;
 			default:
 				echo $data; break;
 		}
-		exit(0);
+		exit($status);
 	}
 	
 	private function gen_json($data) {
@@ -288,7 +294,15 @@ function needs($path) {
 	$moduleloader->needs($path);
 }
 
-function response($data, $type = 'json') {
+function response($data, $type = 'json', $status = 200) {
     global $responseparser;
-    $responseparser->generate($data, $type);
+    $responseparser->generate($data, $type, $status);
 }
+
+// standard modules
+module('env', function() use($env) { return $env; });
+module('routeParams', function() use($env) { return $env->getParams(); });
+module('rawData', function() use($env) { return $env->getData(); });
+module('reqMethod', function() use($env) { return $env->getMethod(); });
+module('reqHeaders', function() use($env) { return $env->getHeaders(); });
+module('args', function() use($env) { return $env->getArgs(); });
