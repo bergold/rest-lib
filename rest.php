@@ -320,9 +320,9 @@ function response($data, $type = 'json', $status = 200) {
 
 
 // standard modules
-module('env', function() use($env) { return $env; });
+module('env',         function() use($env) { return $env; });
 module('routeParams', function() use($env) { return $env->getParams(); });
-module('rawData', function() use($env) { return $env->getData(); });
-module('reqMethod', function() use($env) { return $env->getMethod(); });
-module('reqHeaders', function() use($env) { return $env->getHeaders(); });
-module('args', function() use($env) { return $env->getArgs(); });
+module('rawData',     function() use($env) { return $env->getData(); });
+module('reqMethod',   function() use($env) { return $env->getMethod(); });
+module('reqHeaders',  function() use($env) { return $env->getHeaders(); });
+module('args',        function() use($env) { return $env->getArgs(); });
