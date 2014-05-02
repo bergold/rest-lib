@@ -47,7 +47,7 @@ handler('base', function() {
   response([
     "for" => "example",
     "json" => "data"
-  ], "json");
+  ], "json", 200);
 });
 ```
 
@@ -69,6 +69,6 @@ handler('ahandler', function($amodule) {
 ```php
 needs('this/file');
 ```
-will load the file 'this/file.php'
+This will load the file 'this/file.php'
 
 > Important: If you don't use "dependencies" in your route, make sure your handlers are loaded before the route definition
