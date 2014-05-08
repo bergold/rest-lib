@@ -91,6 +91,7 @@ class ModuleLoader {
     	if (isset($this->includes[$dep])) return true;
     	if (!is_file($path)) throw new Exception("FILE_NOT_FOUND: The file '$path' was not found");
     	include $path;
+    	$this->includes[$dep] = true;
     	return true;
     }
     
@@ -103,12 +104,17 @@ class ModuleLoader {
     public function getDep($dep) {
     	global $env;
         if (!isset($this->modules[$dep])) throw new Exception("MODULE_NOT_FOUND: The module '$dep' was not found");
-        return $this->compile($this->modules[$dep]);
+        $m = $this->modules[$dep];
+        if ($m['compiled']) return $m['module'];
+        $m = $this->compile($m['module']);
+        $this->modules[$dep]['module'] = $m;
+        $this->modules[$dep]['compiled'] = true;
+        return $m;
     }
     
     public function addModule($name, $fn) {
     	if (isset($this->modules[$name]) && !config('ALLOW_MODULE_OVERWRITE')) throw new Exception("MODULE_OVERWRITE_FORBIDDEN: The module '$name' already exists");
-    	$this->modules[$name] = $fn;
+    	$this->modules[$name] = array("module" => $fn, "compiled" => false);
     }
     
     public function addHandler($name, $fn) {
@@ -254,9 +260,12 @@ class ResponseParser {
 	}
 	
 	public function out($data, $type, $status) {
+		global $script_start;
 		header('Content-type: ' . (isset($this->map_type_mimes[$type]) ? $this->map_type_mimes[$type] : $type));
 		http_response_code($status);
 		echo $this->parse($type, $data);
+		
+		flush();
 		exit($status);
 	}
 	
@@ -326,9 +335,9 @@ function response($data, $type = 'json', $status = 200) {
 
 
 // standard modules
-module('env',         function() use($env) { return $env; });
+module('env', function() use($env) { return $env; });
 module('routeParams', function() use($env) { return $env->getParams(); });
-module('rawData',     function() use($env) { return $env->getData(); });
-module('reqMethod',   function() use($env) { return $env->getMethod(); });
-module('reqHeaders',  function() use($env) { return $env->getHeaders(); });
-module('args',        function() use($env) { return $env->getArgs(); });
+module('rawData', function() use($env) { return $env->getData(); });
+module('reqMethod', function() use($env) { return $env->getMethod(); });
+module('reqHeaders', function() use($env) { return $env->getHeaders(); });
+module('args', function() use($env) { return $env->getArgs(); });
