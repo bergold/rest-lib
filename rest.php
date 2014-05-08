@@ -260,7 +260,6 @@ class ResponseParser {
 	}
 	
 	public function out($data, $type, $status) {
-		global $script_start;
 		header('Content-type: ' . (isset($this->map_type_mimes[$type]) ? $this->map_type_mimes[$type] : $type));
 		http_response_code($status);
 		echo $this->parse($type, $data);
